@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useContent } from '../lib/content'
 import { Frame } from './Frame'
 import { Modal } from './Modal'
+import { AudioClip } from './AudioClip'
 import { blip } from '../lib/sfx'
 
 const POS = [[15, 70], [32, 35], [52, 60], [70, 25], [86, 55], [50, 12], [22, 15], [92, 20], [8, 40], [62, 85], [38, 88], [78, 70]]
@@ -29,7 +30,7 @@ export function Constellation() {
         ))}
       </div>
       <Modal open={!!m} onClose={() => setSel(null)} title={m?.title ?? ''}>
-        {m && <><div className="mx-auto max-w-[260px]"><Frame path={m.photoPath} emoji={m.emoji} frame={m.frame} fc={m.fc} caption={m.title} /></div><p className="mt-2 text-xs">{m.date}</p><p>{m.description}</p></>}
+        {m && <><div className="mx-auto max-w-[260px]"><Frame path={m.photoPath} emoji={m.emoji} frame={m.frame} fc={m.fc} caption={m.caption} alt={m.title} /></div><p className="mt-2 text-xs">{m.date}</p><p>{m.description}</p><AudioClip path={m.audioPath} label={`Audio for ${m.title}`} /></>}
       </Modal>
     </section>
   )
