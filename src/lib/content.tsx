@@ -16,6 +16,9 @@ export function defaultContent(): Content {
     main: birthday.mainMessage,
     birthday: '2026-11-14',
     relationshipStart: birthday.relationshipStart, // empty on purpose: never invented
+    labels: { world: 'Home', memories: 'Memories', gifts: 'Gifts', stars: 'Stars', letter: 'Letter', finale: 'Finale' },
+    layouts: { timeline: 'Timeline', polaroid: 'Polaroid', carousel: 'Carousel', scrapbook: 'Scrapbook' },
+    pages: [],
     wish: 'May every beautiful wish in your heart come true. You deserve all the happiness in this universe.',
     letter: { greeting: loveLetter.greeting, text: loveLetter.lines.join('\n'), signature: loveLetter.signature },
     dateIdeas: birthday.dateIdeas.join('\n'),
@@ -33,6 +36,7 @@ function parse(raw: unknown): Content {
   const r = raw as Partial<Content>
   const merged = {
     ...base, ...r,
+    labels: { ...base.labels, ...r.labels }, layouts: { ...base.layouts, ...r.layouts }, pages: Array.isArray(r.pages) ? r.pages : [],
     letter: { ...base.letter, ...r.letter }, eggs: { ...base.eggs, ...r.eggs }, voice: { ...base.voice, ...r.voice },
     gifts: Array.isArray(r.gifts) && r.gifts.length === 12 ? r.gifts : base.gifts,
   }
@@ -71,17 +75,42 @@ async function shrinkImage(file: File, max = 1400, quality = 0.82): Promise<Blob
   return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('Could not process the image.'))), 'image/jpeg', quality))
 }
 
+const EXT_TYPES: Record<string, string> = { m4a: 'audio/mp4', mp3: 'audio/mpeg', mp4: 'video/mp4', webm: 'video/webm', ogg: 'audio/ogg', oga: 'audio/ogg' }
+/** iPhones label voice memos audio/x-m4a; the bucket expects audio/mp4. */
+function mimeOf(file: File): string {
+  const t = file.type.toLowerCase()
+  if (t === 'audio/x-m4a' || t === 'audio/m4a' || t === 'audio/mp4a-latm') return 'audio/mp4'
+  if (t === 'audio/mp3') return 'audio/mpeg'
+  if (t) return t
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
+  return EXT_TYPES[ext] ?? ''
+}
+function extOf(mime: string): string {
+  if (mime === 'audio/mp4') return 'm4a'
+  if (mime === 'audio/mpeg') return 'mp3'
+  return mime.split('/')[1] ?? 'bin'
+}
+
 export async function uploadMedia(file: File): Promise<string> {
-  const bad = validateUpload(file)
-  if (bad) throw new Error(bad)
-  const isImage = file.type.startsWith('image/')
-  const body: Blob = isImage ? await shrinkImage(file) : file
-  const ext = isImage ? 'jpg' : (file.type.split('/')[1] ?? 'bin').replace('mpeg', 'mp3')
+  const mime = mimeOf(file)
+  const isImage = mime.startsWith('image/')
+  if (isImage) {
+    if (file.size > 30 * 1024 * 1024) throw new Error('Photo too large (max 30 MB).')
+  } else {
+    const bad = validateUpload({ type: mime, size: file.size })
+    if (bad) throw new Error(bad)
+  }
+  let body: Blob
+  if (isImage) {
+    try { body = await shrinkImage(file) } catch { throw new Error('Could not read that photo. Try a JPG or PNG.') }
+  } else {
+    body = file.slice(0, file.size, mime)
+  }
   const id = crypto.randomUUID()
   if (demoMode) { const p = `demo:${id}`; demoMedia.set(p, URL.createObjectURL(body)); return p }
   if (!supabase) throw new Error('Not connected to Supabase.')
-  const path = `${isImage ? 'photos' : 'voice'}/${id}.${ext}`
-  const { error } = await supabase.storage.from(BUCKET).upload(path, body, { contentType: body.type || file.type, upsert: false })
+  const path = `${isImage ? 'photos' : 'voice'}/${id}.${isImage ? 'jpg' : extOf(mime)}`
+  const { error } = await supabase.storage.from(BUCKET).upload(path, body, { contentType: body.type || mime, upsert: false })
   if (error) throw new Error('Upload failed. Are you signed in as the admin?')
   return path
 }
