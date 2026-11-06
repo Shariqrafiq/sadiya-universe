@@ -5,6 +5,7 @@ import { useContent } from '../lib/content'
 import { useGiftProgress } from '../hooks/useGiftProgress'
 import { Frame } from './Frame'
 import { Modal } from './Modal'
+import { AudioClip } from './AudioClip'
 import { Confetti } from './Confetti'
 import { chime } from '../lib/sfx'
 
@@ -49,9 +50,10 @@ export function GiftCollection() {
         {current && (
           <div className="text-center">
             {current.photoPath
-              ? <div className="mx-auto mb-3 max-w-[260px]"><Frame path={current.photoPath} emoji={current.emoji} frame={current.frame} fc={current.fc} caption={current.title} /></div>
+              ? <div className="mx-auto mb-3 max-w-[260px]"><Frame path={current.photoPath} emoji={current.emoji} frame={current.frame} fc={current.fc} caption={current.caption} alt={current.title} /></div>
               : <div aria-hidden className="text-6xl">{current.emoji}</div>}
             <p className="mt-2 whitespace-pre-line text-lg">{current.message}</p>
+            <AudioClip path={current.audioPath} label={`Audio for ${current.title}`} />
           </div>
         )}
       </Modal>
