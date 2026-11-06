@@ -46,3 +46,5 @@ body { @apply font-body antialiased overflow-x-hidden; color: rgb(var(--c-ink));
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
+
+.fr-cap { font-family: 'Dancing Script', cursive; font-size: 1.25rem; text-align: center; margin: .5rem 0 0; line-height: 1.2; }
