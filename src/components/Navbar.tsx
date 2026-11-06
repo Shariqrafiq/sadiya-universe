@@ -2,15 +2,19 @@ import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { Volume2, VolumeX, LogOut, Pencil } from 'lucide-react'
 import { useAuth } from '../lib/auth'
+import { useContent } from '../lib/content'
 import { setSoundEnabled, soundEnabled } from '../lib/sfx'
 
-const links = [
-  ['/world', 'Home'], ['/memories', 'Memories'], ['/gifts', 'Gifts'],
-  ['/stars', 'Stars'], ['/letter', 'Letter'], ['/finale', 'Finale'],
-] as const
 
 export function Navbar() {
   const { logout, isAdmin } = useAuth()
+  const { content } = useContent()
+  const L = content.labels
+  const links: [string, string][] = [
+    ['/world', L.world], ['/memories', L.memories], ['/gifts', L.gifts], ['/stars', L.stars], ['/letter', L.letter],
+    ...content.pages.map((p): [string, string] => [`/page/${p.id}`, `${p.emoji} ${p.title}`]),
+    ['/finale', L.finale],
+  ]
   const nav = useNavigate()
   const [snd, setSnd] = useState(soundEnabled())
   const cls = ({ isActive }: { isActive: boolean }) => `whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold ${isActive ? 'bg-petal text-white' : ''}`
