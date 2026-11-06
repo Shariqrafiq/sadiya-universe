@@ -10,6 +10,7 @@ export interface Memory {
   date: string
   description: string
   emoji: string
+  caption?: string
   photoPath?: string // path inside the private bucket
   frame: FrameStyle
   fc: string // frame colour
