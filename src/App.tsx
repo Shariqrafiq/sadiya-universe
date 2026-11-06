@@ -15,6 +15,7 @@ const Gifts = lazy(() => import('./pages/Gifts'))
 const Stars = lazy(() => import('./pages/Stars'))
 const Letter = lazy(() => import('./pages/Letter'))
 const Finale = lazy(() => import('./pages/Finale'))
+const CustomPage = lazy(() => import('./pages/CustomPage'))
 const Studio = lazy(() => import('./pages/Studio'))
 
 function PrivateLayout() {
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="/gifts" element={<Gifts />} />
               <Route path="/stars" element={<Stars />} />
               <Route path="/letter" element={<Letter />} />
+              <Route path="/page/:id" element={<CustomPage />} />
               <Route path="/finale" element={<Finale />} />
               <Route element={<AdminRoute />}><Route path="/studio" element={<Studio />} /></Route>
             </Route>
