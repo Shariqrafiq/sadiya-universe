@@ -5,7 +5,9 @@ export interface Gift {
   title: string
   emoji: string
   message: string
+  caption?: string
   photoPath?: string
+  audioPath?: string
   frame: FrameStyle
   fc: string
 }
